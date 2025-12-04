@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arkham AI Module Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">Arkham<br>Architect</div>
+        
+        <div class="nav-item active" onclick="switchView('view-workstation', this)">
+            <span class="nav-cn">核心创作平台</span>
+            <span class="nav-en">STORY WORKSTATION</span>
+        </div>
+        
+        <div class="nav-item" onclick="switchView('view-npc', this)">
+            <span class="nav-cn">调查员与角色档案</span>
+            <span class="nav-en">CHARACTER ARCHIVES</span>
+        </div>
+        
+        <div class="nav-item" onclick="switchView('view-scene', this)">
+            <span class="nav-cn">探索区域与线索链</span>
+            <span class="nav-en">SCENES & CLUES</span>
+        </div>
+
+        <div class="nav-item" onclick="Engine.renderBook(); switchView('view-preview', this)">
+            <span class="nav-cn">模组排版预览</span>
+            <span class="nav-en">PREVIEW & EXPORT PDF</span>
+        </div>
+        
+	<div class="nav-item" onclick="ArchiveSystem.renderList(); switchView('view-archive', this)">
+    	<span class="nav-cn">历史档案室</span>
+    	<span class="nav-en">SAVED ARCHIVES</span>
+	</div>
+
+        <div class="theme-switcher">
+            <div class="theme-label">VISUAL THEME</div>
+            <div class="theme-btn" onclick="setTheme('yellow')" title="黄衣之王" style="background: #fdf6e3; border: 1px solid #8a0303;"></div>
+            <div class="theme-btn" onclick="setTheme('noir')" title="黑色大丽花" style="background: #222; border: 1px solid #fff;"></div>
+            <div class="theme-btn" onclick="setTheme('deep')" title="拉莱耶" style="background: #002b36; border: 1px solid #2aa198;"></div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        
+       <div id="view-workstation" class="view-section active-view">
+            <section class="section-card">
+                <h2>01. 灵感源泉 <span>The Source</span></h2>
+                <div class="grid-2x2">
+                    <div class="info-box"><label>时代 (ERA)</label><input type="text" id="val-era" class="input-field" placeholder="等待铭刻..."></div>
+                    <div class="info-box"><label>地点 (LOC)</label><input type="text" id="val-loc" class="input-field" placeholder="等待铭刻..."></div>
+                    <div class="info-box"><label>反派 (ANTAGONIST)</label><input type="text" id="val-boss" class="input-field" placeholder="等待铭刻..."></div>
+                    <div class="info-box"><label>核心物品 (ITEM)</label><input type="text" id="val-item" class="input-field" placeholder="等待铭刻..."></div>
+                </div>
+                <button class="btn ai-btn" onclick="Engine.generateSourceAI()">✒️ 铭刻灵感 (Inscribe)</button>
+            </section>
+
+            <section class="section-card" id="section-branch" style="opacity: 0.5; pointer-events: none;">
+                <h2>02. 叙事走向 <span>Choose Path</span></h2>
+                <button class="btn primary-btn" onclick="Engine.generateBranchesAI()" style="margin-bottom: 20px;">🕯️ 推演命运 (Divination)</button>
+                <div id="loading-branches" style="display:none; color:var(--text-muted); text-align:center;">/// 翻阅命运之书... ///</div>
+                <div id="branch-container" class="branch-list"></div>
+                <div style="margin-top: 25px;">
+                    <textarea id="val-final-branch" class="input-field" rows="3" placeholder="最终剧情..."></textarea>
+                </div>
+            </section>
+
+            <section class="section-card" id="section-full" style="display: none;">
+                <h2>03. 模组全貌 <span>Final Manuscript</span></h2>
+                <button class="btn ai-btn" onclick="Engine.generateFullModule()">🖋️ 自动书写 (Auto-Write)</button>
+                <div id="loading-bar" class="loading-bar"><div class="bar-fill"></div></div>
+                <div class="module-block"><h3>真相</h3><p id="out-truth" class="paper-text">...</p></div>
+                <div class="module-block"><h3>时间轴</h3><ul id="out-timeline" class="timeline-list"></ul></div>
+                <div class="module-block"><h3>决战</h3><p id="out-climax" class="paper-text">...</p></div>
+            </section>
+        </div>
+
+        <div id="view-npc" class="view-section">
+            <section class="section-card">
+                <h2>人物档案 <span>NPCs</span></h2>
+                <button class="btn ai-btn" onclick="Engine.generateNPCs()">👥 生成 NPC 列表</button>
+                <div id="npc-container" class="npc-grid" style="margin-top: 30px;"></div>
+            </section>
+        </div>
+
+        <div id="view-scene" class="view-section">
+            <section class="section-card">
+                <h2>调查场景 <span>Scenes</span></h2>
+                <button class="btn ai-btn" onclick="Engine.generateScenes()">🔍 生成探索区域</button>
+                <div id="scene-container" style="margin-top: 30px;"></div>
+            </section>
+        </div>
+
+        <div id="view-preview" class="view-section">
+            <div style="margin-bottom: 20px; text-align: right;">
+                <button class="btn ai-btn" onclick="window.print()" style="width: auto; display: inline-flex;">
+                    🖨️ 导出 PDF / 打印 (Export)
+                </button>
+            </div>
+
+	<div id="view-archive" class="view-section">
+    <section class="section-card">
+        <h2>密塔档案室 <span>Archives</span></h2>
+        <div class="grid-2x2" style="grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px;">
+            <p style="color: var(--text-muted);">在此处封存当前的创作，或读取过往的记录。</p>
+            <button class="btn ai-btn" onclick="ArchiveSystem.saveCurrent()">💾 封存当前模组 (Save)</button>
+        </div>
+        
+        <div id="archive-list" class="branch-list">
+            </div>
+    </section>
+</div>
+
+            <div id="book-content" class="book-container">
+                <div style="text-align: center; padding: 50px; color: #888;">
+                    请先在【创作台】、【人物志】和【调查场景】中生成内容，<br>然后点击此页面，书本将自动装订。
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script>
+        function switchView(viewId, navEl) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
+            document.getElementById(viewId).classList.add('active-view');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            if(navEl) navEl.classList.add('active');
+        }
+    </script>
+</body>
+</html>
