@@ -130,19 +130,42 @@
 
     <script src="data.js"></script>
 <div id="api-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-box">
+    <div class="modal-box" style="width: 480px;">
         <h3>调查员身份验证</h3>
         <p style="margin-bottom: 15px; font-size: 0.9rem; color: #666;">
-            本工具需要连接ai使用。<br>
-            请输入你的 API Key 以获取访问权限。
+            本工具需要连接 AI 使用。支持 Gemini / OpenAI 及兼容格式。
         </p>
-        <input type="password" id="input-api-key" class="input-field" placeholder="粘贴你的 Google Gemini API Key..." style="margin-bottom: 20px; font-size: 1rem;">
+        
+        <div class="info-box" style="margin-bottom: 15px;">
+            <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">API 类型</label>
+            <select id="select-provider" class="input-field" style="width: 100%; padding: 8px; font-size: 1rem; cursor: pointer;" onchange="updateProviderPlaceholders()">
+                <option value="gemini">Google Gemini</option>
+                <option value="openai">OpenAI / 兼容格式</option>
+            </select>
+        </div>
+        
+        <div class="info-box" style="margin-bottom: 15px;">
+            <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">API Key *</label>
+            <input type="password" id="input-api-key" class="input-field" placeholder="粘贴你的 API Key..." style="font-size: 1rem;">
+        </div>
+        
+        <div class="info-box" style="margin-bottom: 15px;">
+            <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">Base URL (留空使用默认)</label>
+            <input type="text" id="input-base-url" class="input-field" placeholder="https://generativelanguage.googleapis.com/v1beta" style="font-size: 0.9rem;">
+        </div>
+        
+        <div class="info-box" style="margin-bottom: 20px;">
+            <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">模型名称 (留空使用默认)</label>
+            <input type="text" id="input-model" class="input-field" placeholder="gemini-2.5-flash-preview-05-20" style="font-size: 0.9rem;">
+        </div>
+        
         <div style="display: flex; justify-content: flex-end; gap: 10px;">
             <button class="btn btn-small" onclick="toggleApiModal(false)">取消</button>
-            <button class="btn ai-btn" style="width: auto;" onclick="saveApiKey()">验证并接入</button>
+            <button class="btn ai-btn" style="width: auto;" onclick="saveApiConfig()">验证并接入</button>
         </div>
         <p style="margin-top: 15px; font-size: 0.7rem; color: #999;">
-            * Key 仅存储在您的本地浏览器中，不会上传至任何服务器。
+            * 所有配置仅存储在您的本地浏览器中，不会上传至任何服务器。<br>
+            * OpenAI 格式兼容: DeepSeek、Claude等。
         </p>
     </div>
 </div>
