@@ -2,7 +2,7 @@
 // 配置区域
 // ==========================================
 // 【重要】请务必保留你之前填写的真实 Key
-const API_KEY = "AIzaSyCt4OigsGUVb13csaRBKeBN9xhXZ4Pgl6g".trim(); 
+const API_KEY = "AIzaSyAxYLh5IAs9aSjBOZ_mbbGHjYpAo3W_a84".trim(); 
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
 
 const Engine = {
