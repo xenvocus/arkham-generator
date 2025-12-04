@@ -257,3 +257,30 @@ textarea.input-field {
     color: #8a0303;
     background: rgba(138, 3, 3, 0.1);
 }
+
+/* --- 5. 密钥弹窗样式 (Modal) --- */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7); /* 半透明黑色背景 */
+    backdrop-filter: blur(5px);   /* 背景模糊 */
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; /* 保证在最上层 */
+    animation: fadeIn 0.3s;
+}
+
+.modal-box {
+    background: var(--bg-panel);
+    padding: 40px;
+    width: 400px;
+    border-radius: 4px;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+.modal-box h3 {
+    margin-top: 0;
+    color: var(--accent);
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 10px;
+}

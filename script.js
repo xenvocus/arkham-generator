@@ -1,9 +1,41 @@
 // ==========================================
 // 配置区域
 // ==========================================
-// 【重要】请务必保留你之前填写的真实 Key
-const API_KEY = "AIzaSyAxYLh5IAs9aSjBOZ_mbbGHjYpAo3W_a84".trim(); 
+// ==========================================
+// 配置与密钥管理
+// ==========================================
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
+
+// 获取 API Key 的辅助函数
+function getApiKey() {
+    let key = localStorage.getItem('user_gemini_key');
+    if (!key) {
+        toggleApiModal(true); // 如果没有 key，这就弹窗
+        throw new Error("请先配置 API Key！"); // 阻止后续运行
+    }
+    return key;
+}
+
+// 控制弹窗显示的函数
+function toggleApiModal(show) {
+    const modal = document.getElementById('api-modal');
+    modal.style.display = show ? 'flex' : 'none';
+    if(show) {
+        // 如果是打开，尝试把旧的 key 填进去方便修改
+        document.getElementById('input-api-key').value = localStorage.getItem('user_gemini_key') || '';
+    }
+}
+
+// 保存 Key 的函数
+function saveApiKey() {
+    const input = document.getElementById('input-api-key');
+    const key = input.value.trim();
+    if(!key) { alert("Key 不能为空！"); return; }
+    
+    localStorage.setItem('user_gemini_key', key);
+    alert("✅ 密钥已安全铭刻在本地。");
+    toggleApiModal(false);
+}
 
 const Engine = {
     // 1. 本地随机生成 (保留功能)
@@ -320,9 +352,13 @@ const Engine = {
     // 9. 通用 API 调用器
     callGeminiAPI: async function(promptText) {
         const payload = { contents: [{ parts: [{ text: promptText }] }] };
-        const response = await fetch(`${API_URL}?key=${API_KEY}`, {
-            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
-        });
+        // 这里调用 getApiKey() 获取用户刚才存的 key
+const userKey = getApiKey(); 
+const response = await fetch(`${API_URL}?key=${userKey}`, { // <--- 注意这里变了
+    method: "POST", 
+    headers: { "Content-Type": "application/json" }, 
+    body: JSON.stringify(payload)
+});
         if (!response.ok) throw new Error(await response.text());
         const data = await response.json();
         let text = data.candidates[0].content.parts[0].text;
