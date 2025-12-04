@@ -179,16 +179,7 @@ textarea.input-field {
 .scene-title { font-weight: bold; color: var(--text-primary); font-size: 1.1rem; }
 .scene-event { color: var(--accent); font-weight: bold; margin-top: 10px; font-style: italic; }
 
-/* 这部分控制预览页的“书本感”和打印效果 */
-.book-container {
-    background-color: #fdf6e3; /* 强制书本为纸色，不受夜间模式影响，方便阅读 */
-    color: #222; /* 强制黑色文字 */
-    padding: 60px;
-    max-width: 800px;
-    margin: 0 auto;
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
-    font-family: 'Georgia', serif;
-}
+/* 这部分控制预览页的"书本感"和打印效果 - 已移至下方，跟随主题 */
 
 /* 打印时的特殊设置：隐藏侧边栏，只显示书 */
 @media print {
@@ -201,13 +192,83 @@ textarea.input-field {
     .book-container { box-shadow: none; padding: 0; margin: 0; width: 100%; max-width: none; }
 }
 
-/* 书内排版样式 */
-.book-title { font-size: 2.5rem; text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 40px; font-weight: bold; }
-.book-meta { text-align: center; font-style: italic; color: #555; margin-bottom: 50px; display: flex; justify-content: center; gap: 30px; }
-.book-columns { column-count: 2; column-gap: 40px; text-align: justify; line-height: 1.6; }
-.book-h1 { font-size: 1.4rem; font-weight: bold; border-bottom: 1px solid #ccc; margin-top: 30px; margin-bottom: 15px; color: #8a0303; break-after: avoid; }
-.book-p { margin-bottom: 15px; font-size: 1rem; }
-.book-box { background: #eee; padding: 15px; border: 1px solid #aaa; margin: 20px 0; break-inside: avoid; }
+/* 书内排版样式 - 跟随主题 */
+.book-container {
+    background-color: var(--bg-panel);
+    color: var(--text-primary);
+    padding: 60px;
+    max-width: 800px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-card);
+    font-family: var(--font-serif);
+}
+
+.book-title { 
+    font-size: 2.5rem; 
+    text-align: center; 
+    border-bottom: 2px solid var(--text-primary); 
+    padding-bottom: 20px; 
+    margin-bottom: 40px; 
+    font-weight: bold; 
+    color: var(--text-primary);
+}
+.book-title span {
+    font-size: 1.2rem; 
+    font-family: var(--font-serif); 
+    font-weight: normal; 
+    display: block; 
+    margin-top: 10px; 
+    letter-spacing: 2px; 
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+.book-meta { 
+    text-align: center; 
+    font-style: italic; 
+    color: var(--text-muted); 
+    margin-bottom: 50px; 
+    display: flex; 
+    justify-content: center; 
+    gap: 30px; 
+}
+.book-columns { 
+    column-count: 2; 
+    column-gap: 40px; 
+    text-align: justify; 
+    line-height: 1.6; 
+}
+.book-h1 { 
+    font-size: 1.4rem; 
+    font-weight: bold; 
+    border-bottom: 1px solid var(--border); 
+    margin-top: 30px; 
+    margin-bottom: 15px; 
+    color: var(--accent); 
+    break-after: avoid; 
+}
+.book-p { 
+    margin-bottom: 15px; 
+    font-size: 1rem; 
+    color: var(--text-primary);
+}
+.book-box { 
+    background: rgba(0,0,0,0.05); 
+    padding: 15px; 
+    border: 1px solid var(--border); 
+    margin: 20px 0; 
+    break-inside: avoid; 
+}
+
+/* 书内列表样式 */
+.book-container ul {
+    color: var(--text-primary);
+}
+.book-container li {
+    margin-bottom: 10px;
+}
+.book-container li strong {
+    color: var(--accent);
+}
 
 /* --- 4. 档案室样式 (新增) --- */
 .archive-card {

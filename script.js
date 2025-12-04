@@ -399,9 +399,7 @@ const Engine = {
         const bookHtml = `
             <div class="book-title">
                 ${titleCn}<br>
-                <span style="font-size: 1.2rem; font-family: sans-serif; font-weight:normal; display:block; margin-top:10px; letter-spacing:2px; text-transform: uppercase;">
-                    ${titleEn}
-                </span>
+                <span>${titleEn}</span>
             </div>
             
             <div class="book-meta">
@@ -664,6 +662,10 @@ async function exportToPDF() {
     try {
         const { jsPDF } = window.jspdf;
         
+        // 获取当前主题的背景色
+        const computedStyle = getComputedStyle(bookContent);
+        const bgColor = computedStyle.backgroundColor || '#fdf6e3';
+        
         // 临时样式调整以获得更好的渲染效果
         const originalWidth = bookContent.style.width;
         bookContent.style.width = '800px';
@@ -672,7 +674,7 @@ async function exportToPDF() {
         const canvas = await html2canvas(bookContent, {
             scale: 2, // 提高清晰度
             useCORS: true,
-            backgroundColor: '#fdf6e3', // 确保背景色
+            backgroundColor: bgColor, // 使用当前主题背景色
             logging: false
         });
         
