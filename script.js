@@ -2,18 +2,49 @@
 // 配置区域
 // ==========================================
 // ==========================================
-// 配置与密钥管理
+// 配置与密钥管理 (支持 Gemini / OpenAI 格式)
 // ==========================================
-const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
 
-// 获取 API Key 的辅助函数
-function getApiKey() {
-    let key = localStorage.getItem('user_gemini_key');
-    if (!key) {
-        toggleApiModal(true); // 如果没有 key，这就弹窗
-        throw new Error("请先配置 API Key！"); // 阻止后续运行
+// 默认配置
+const DEFAULT_CONFIGS = {
+    gemini: {
+        baseUrl: "https://generativelanguage.googleapis.com/v1beta",
+        model: "gemini-2.5-flash-preview-05-20"
+    },
+    openai: {
+        baseUrl: "https://api.openai.com/v1",
+        model: "gpt-4o-mini"
     }
-    return key;
+};
+
+// 获取当前 API 配置
+function getApiConfig() {
+    const config = {
+        provider: localStorage.getItem('api_provider') || 'gemini',
+        apiKey: localStorage.getItem('api_key') || '',
+        baseUrl: localStorage.getItem('api_base_url') || '',
+        model: localStorage.getItem('api_model') || ''
+    };
+    
+    // 如果没有配置，使用默认值
+    if (!config.baseUrl) {
+        config.baseUrl = DEFAULT_CONFIGS[config.provider]?.baseUrl || DEFAULT_CONFIGS.gemini.baseUrl;
+    }
+    if (!config.model) {
+        config.model = DEFAULT_CONFIGS[config.provider]?.model || DEFAULT_CONFIGS.gemini.model;
+    }
+    
+    return config;
+}
+
+// 检查 API Key 是否已配置
+function checkApiKey() {
+    const config = getApiConfig();
+    if (!config.apiKey) {
+        toggleApiModal(true);
+        throw new Error("请先配置 API Key！");
+    }
+    return config;
 }
 
 // 控制弹窗显示的函数
@@ -21,19 +52,40 @@ function toggleApiModal(show) {
     const modal = document.getElementById('api-modal');
     modal.style.display = show ? 'flex' : 'none';
     if(show) {
-        // 如果是打开，尝试把旧的 key 填进去方便修改
-        document.getElementById('input-api-key').value = localStorage.getItem('user_gemini_key') || '';
+        // 填充已保存的配置
+        const config = getApiConfig();
+        document.getElementById('select-provider').value = config.provider;
+        document.getElementById('input-api-key').value = localStorage.getItem('api_key') || '';
+        document.getElementById('input-base-url').value = localStorage.getItem('api_base_url') || '';
+        document.getElementById('input-model').value = localStorage.getItem('api_model') || '';
+        updateProviderPlaceholders();
     }
 }
 
-// 保存 Key 的函数
-function saveApiKey() {
-    const input = document.getElementById('input-api-key');
-    const key = input.value.trim();
-    if(!key) { alert("Key 不能为空！"); return; }
+// 根据选择的提供商更新占位符
+function updateProviderPlaceholders() {
+    const provider = document.getElementById('select-provider').value;
+    const defaults = DEFAULT_CONFIGS[provider] || DEFAULT_CONFIGS.gemini;
     
-    localStorage.setItem('user_gemini_key', key);
-    alert("✅ 密钥已安全铭刻在本地。");
+    document.getElementById('input-base-url').placeholder = defaults.baseUrl;
+    document.getElementById('input-model').placeholder = defaults.model;
+}
+
+// 保存配置的函数
+function saveApiConfig() {
+    const provider = document.getElementById('select-provider').value;
+    const apiKey = document.getElementById('input-api-key').value.trim();
+    const baseUrl = document.getElementById('input-base-url').value.trim();
+    const model = document.getElementById('input-model').value.trim();
+    
+    if(!apiKey) { alert("API Key 不能为空！"); return; }
+    
+    localStorage.setItem('api_provider', provider);
+    localStorage.setItem('api_key', apiKey);
+    localStorage.setItem('api_base_url', baseUrl);
+    localStorage.setItem('api_model', model);
+    
+    alert("✅ 配置已安全铭刻在本地。");
     toggleApiModal(false);
 }
 
@@ -47,31 +99,68 @@ const Engine = {
         this.activateNextStage();
     },
 
-    // 2. AI 铭刻灵感
+    // 2. AI 铭刻灵感 (智能补全：只填充用户未填写的字段)
     generateSourceAI: async function() {
         const btn = document.querySelector('button[onclick="Engine.generateSourceAI()"]');
         const originalText = btn.innerText;
         btn.innerText = "⏳ 构思中...";
         btn.disabled = true;
 
+        // 获取用户已填写的内容
+        const userInputs = {
+            era: document.getElementById('val-era').value.trim(),
+            location: document.getElementById('val-loc').value.trim(),
+            boss: document.getElementById('val-boss').value.trim(),
+            item: document.getElementById('val-item').value.trim()
+        };
+
+        // 检查哪些字段需要生成
+        const fieldsToGenerate = [];
+        if (!userInputs.era) fieldsToGenerate.push('era (时代背景)');
+        if (!userInputs.location) fieldsToGenerate.push('location (地点)');
+        if (!userInputs.boss) fieldsToGenerate.push('boss (反派)');
+        if (!userInputs.item) fieldsToGenerate.push('item (关键道具)');
+
+        // 如果所有字段都已填写，直接激活下一阶段
+        if (fieldsToGenerate.length === 0) {
+            this.activateNextStage();
+            btn.innerText = originalText;
+            btn.disabled = false;
+            return;
+        }
+
         try {
+            // 构建智能提示词
+            let contextInfo = '';
+            if (userInputs.era) contextInfo += `- 时代背景已确定为：「${userInputs.era}」\n`;
+            if (userInputs.location) contextInfo += `- 地点已确定为：「${userInputs.location}」\n`;
+            if (userInputs.boss) contextInfo += `- 反派已确定为：「${userInputs.boss}」\n`;
+            if (userInputs.item) contextInfo += `- 关键道具已确定为：「${userInputs.item}」\n`;
+
             const prompt = `
-                请发挥你的创造力，随机构思一个独特的克苏鲁跑团(COC)设定。
-                你需要提供：一个独特的时代背景、一个恐怖的地点、一个幕后黑手(神话生物或邪教)、一个关键道具。
-                请严格返回以下 JSON 格式：
+                请发挥你的创造力，为一个克苏鲁跑团(COC)设定补充缺失的元素。
+                
+                ${contextInfo ? '【用户已设定的内容】\n' + contextInfo : ''}
+                
+                【需要你补充的内容】
+                ${fieldsToGenerate.join('、')}
+                
+                请根据已有设定（如果有）进行合理的补充，确保整体风格统一、氛围协调。
+                请严格返回以下 JSON 格式（只填写需要补充的字段，已有的字段保持原值）：
                 {
-                    "era": "时代 (例如：2049年赛博东京)",
-                    "location": "地点 (例如：废弃的仿生人制造厂)",
-                    "boss": "反派 (例如：产生自我意识的修格斯)",
-                    "item": "物品 (例如：植入式死灵芯片)"
+                    "era": "${userInputs.era || '时代 (例如：2049年赛博东京)'}",
+                    "location": "${userInputs.location || '地点 (例如：废弃的仿生人制造厂)'}",
+                    "boss": "${userInputs.boss || '反派 (例如：产生自我意识的修格斯)'}",
+                    "item": "${userInputs.item || '物品 (例如：植入式死灵芯片)'}"
                 }
             `;
-            const data = await this.callGeminiAPI(prompt);
+            const data = await this.callAI(prompt);
             
-            document.getElementById('val-era').value = data.era;
-            document.getElementById('val-loc').value = data.location;
-            document.getElementById('val-boss').value = data.boss;
-            document.getElementById('val-item').value = data.item;
+            // 只更新空白字段，保留用户已填写的内容
+            if (!userInputs.era) document.getElementById('val-era').value = data.era;
+            if (!userInputs.location) document.getElementById('val-loc').value = data.location;
+            if (!userInputs.boss) document.getElementById('val-boss').value = data.boss;
+            if (!userInputs.item) document.getElementById('val-item').value = data.item;
             
             this.activateNextStage();
 
@@ -349,21 +438,66 @@ const Engine = {
         document.getElementById('book-content').innerHTML = bookHtml;
     },
 
-    // 9. 通用 API 调用器
-    callGeminiAPI: async function(promptText) {
+    // 9. 通用 API 调用器 (支持 Gemini / OpenAI 格式)
+    callAI: async function(promptText) {
+        const config = checkApiKey();
+        
+        if (config.provider === 'openai') {
+            return await this.callOpenAI(promptText, config);
+        } else {
+            return await this.callGemini(promptText, config);
+        }
+    },
+
+    // Gemini API 调用
+    callGemini: async function(promptText, config) {
+        const url = `${config.baseUrl}/models/${config.model}:generateContent?key=${config.apiKey}`;
         const payload = { contents: [{ parts: [{ text: promptText }] }] };
-        // 这里调用 getApiKey() 获取用户刚才存的 key
-const userKey = getApiKey(); 
-const response = await fetch(`${API_URL}?key=${userKey}`, { // <--- 注意这里变了
-    method: "POST", 
-    headers: { "Content-Type": "application/json" }, 
-    body: JSON.stringify(payload)
-});
+        
+        const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        
         if (!response.ok) throw new Error(await response.text());
         const data = await response.json();
         let text = data.candidates[0].content.parts[0].text;
         text = text.replace(/```json|```/g, "").trim();
         return JSON.parse(text);
+    },
+
+    // OpenAI 格式 API 调用 (兼容 OpenAI / DeepSeek / 本地模型等)
+    callOpenAI: async function(promptText, config) {
+        const url = `${config.baseUrl}/chat/completions`;
+        const payload = {
+            model: config.model,
+            messages: [
+                { role: "system", content: "你是一位资深的克苏鲁跑团模组作者，擅长创作恐怖悬疑的故事。请严格按照用户要求的 JSON 格式返回内容，不要添加任何额外说明。" },
+                { role: "user", content: promptText }
+            ],
+            temperature: 0.8
+        };
+        
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${config.apiKey}`
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) throw new Error(await response.text());
+        const data = await response.json();
+        let text = data.choices[0].message.content;
+        text = text.replace(/```json|```/g, "").trim();
+        return JSON.parse(text);
+    },
+
+    // 兼容旧调用 (保持向后兼容)
+    callGeminiAPI: async function(promptText) {
+        return await this.callAI(promptText);
     },
 
     // 辅助
