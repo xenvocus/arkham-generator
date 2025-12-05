@@ -4,7 +4,7 @@
 
 ## 📖 简介
 
-Arkham Architect 是一个 Web 应用，帮助守密人 (Keeper) 快速生成《克苏鲁的呼唤》跑团模组。通过集成 Google Gemini AI，自动创作模组设定、剧情分支、NPC 档案和调查场景。
+Arkham Architect 是一个 Web 应用，帮助守密人 (Keeper) 快速生成《克苏鲁的呼唤》跑团模组。通过集成 AI，自动创作模组设定、剧情分支、NPC 档案和调查场景。
 
 ## ✨ 功能特性
 
@@ -17,7 +17,7 @@ Arkham Architect 是一个 Web 应用，帮助守密人 (Keeper) 快速生成《
 - **📖 模组排版预览** - 专业的双栏书本排版，支持导出 PDF
 - **💾 本地存档系统** - 保存和读取创作进度
 - **🎨 多主题切换** - 黄衣之王 / 黑色大丽花 / 拉莱耶 三种视觉风格
-- **🔗 多 API 支持** - 支持 Gemini、OpenAI 及兼容格式（DeepSeek、本地模型等）
+- **🔗 多 API 支持** - 支持 Gemini、OpenAI 及兼容格式（DeepSeek等）
 
 ## 🚀 快速开始
 

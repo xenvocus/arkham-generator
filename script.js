@@ -25,7 +25,7 @@ function getApiConfig() {
         baseUrl: localStorage.getItem('api_base_url') || '',
         model: localStorage.getItem('api_model') || ''
     };
-    
+
     // 如果没有配置，使用默认值
     if (!config.baseUrl) {
         config.baseUrl = DEFAULT_CONFIGS[config.provider]?.baseUrl || DEFAULT_CONFIGS.gemini.baseUrl;
@@ -33,7 +33,7 @@ function getApiConfig() {
     if (!config.model) {
         config.model = DEFAULT_CONFIGS[config.provider]?.model || DEFAULT_CONFIGS.gemini.model;
     }
-    
+
     return config;
 }
 
@@ -51,7 +51,7 @@ function checkApiKey() {
 function toggleApiModal(show) {
     const modal = document.getElementById('api-modal');
     modal.style.display = show ? 'flex' : 'none';
-    if(show) {
+    if (show) {
         // 填充已保存的配置
         const config = getApiConfig();
         document.getElementById('select-provider').value = config.provider;
@@ -66,7 +66,7 @@ function toggleApiModal(show) {
 function updateProviderPlaceholders() {
     const provider = document.getElementById('select-provider').value;
     const defaults = DEFAULT_CONFIGS[provider] || DEFAULT_CONFIGS.gemini;
-    
+
     document.getElementById('input-base-url').placeholder = defaults.baseUrl;
     document.getElementById('input-model').placeholder = defaults.model;
 }
@@ -77,21 +77,21 @@ function saveApiConfig() {
     const apiKey = document.getElementById('input-api-key').value.trim();
     const baseUrl = document.getElementById('input-base-url').value.trim();
     const model = document.getElementById('input-model').value.trim();
-    
-    if(!apiKey) { alert("API Key 不能为空！"); return; }
-    
+
+    if (!apiKey) { alert("API Key 不能为空！"); return; }
+
     localStorage.setItem('api_provider', provider);
     localStorage.setItem('api_key', apiKey);
     localStorage.setItem('api_base_url', baseUrl);
     localStorage.setItem('api_model', model);
-    
+
     alert("✅ 配置已安全铭刻在本地。");
     toggleApiModal(false);
 }
 
 const Engine = {
     // 1. 本地随机生成 (保留功能)
-    generateSourceLocal: function() {
+    generateSourceLocal: function () {
         document.getElementById('val-era').value = this.randomPick(DB.eras);
         document.getElementById('val-loc').value = this.randomPick(DB.locations);
         document.getElementById('val-boss').value = this.randomPick(DB.bosses);
@@ -100,7 +100,7 @@ const Engine = {
     },
 
     // 2. AI 铭刻灵感 (智能补全：只填充用户未填写的字段)
-    generateSourceAI: async function() {
+    generateSourceAI: async function () {
         const btn = document.querySelector('button[onclick="Engine.generateSourceAI()"]');
         const originalText = btn.innerText;
         btn.innerText = "⏳ 构思中...";
@@ -155,13 +155,13 @@ const Engine = {
                 }
             `;
             const data = await this.callAI(prompt);
-            
+
             // 只更新空白字段，保留用户已填写的内容
             if (!userInputs.era) document.getElementById('val-era').value = data.era;
             if (!userInputs.location) document.getElementById('val-loc').value = data.location;
             if (!userInputs.boss) document.getElementById('val-boss').value = data.boss;
             if (!userInputs.item) document.getElementById('val-item').value = data.item;
-            
+
             this.activateNextStage();
 
         } catch (e) {
@@ -173,7 +173,7 @@ const Engine = {
     },
 
     // 3. AI 推演剧情分支
-    generateBranchesAI: async function() {
+    generateBranchesAI: async function () {
         const context = {
             era: document.getElementById('val-era').value,
             loc: document.getElementById('val-loc').value,
@@ -181,7 +181,7 @@ const Engine = {
             item: document.getElementById('val-item').value
         };
 
-        if(!context.loc) { alert("请先生成或填写上面的灵感信息！"); return; }
+        if (!context.loc) { alert("请先生成或填写上面的灵感信息！"); return; }
 
         const btn = document.querySelector('button[onclick="Engine.generateBranchesAI()"]');
         const originalText = btn.innerHTML;
@@ -191,7 +191,7 @@ const Engine = {
         const loader = document.getElementById('loading-branches');
         const container = document.getElementById('branch-container');
         loader.style.display = 'block';
-        container.innerHTML = ''; 
+        container.innerHTML = '';
 
         try {
             const prompt = `
@@ -230,7 +230,7 @@ const Engine = {
     },
 
     // 4. 选择分支
-    selectBranch: function(text, cardElement) {
+    selectBranch: function (text, cardElement) {
         document.querySelectorAll('.branch-card').forEach(el => el.classList.remove('selected'));
         cardElement.classList.add('selected');
         document.getElementById('val-final-branch').value = text;
@@ -238,7 +238,7 @@ const Engine = {
     },
 
     // 5. 自动书写模组 (包含标题生成逻辑)
-    generateFullModule: async function() {
+    generateFullModule: async function () {
         const btn = document.querySelector('button[onclick="Engine.generateFullModule()"]');
         const originalText = btn.innerHTML;
         btn.innerHTML = "⏳ 书写中...";
@@ -246,7 +246,7 @@ const Engine = {
 
         const loader = document.getElementById('loading-bar');
         const fill = loader.querySelector('.bar-fill');
-        
+
         const context = {
             era: document.getElementById('val-era').value,
             loc: document.getElementById('val-loc').value,
@@ -294,7 +294,7 @@ const Engine = {
             // 渲染正文
             document.getElementById('out-truth').innerText = data.truth;
             document.getElementById('out-climax').innerText = data.climax;
-            
+
             const ul = document.getElementById('out-timeline');
             ul.innerHTML = '';
             data.timeline.forEach(t => {
@@ -307,7 +307,7 @@ const Engine = {
             const storeEl = document.getElementById('val-final-branch');
             storeEl.setAttribute('data-title-cn', data.title);
             storeEl.setAttribute('data-title-en', data.title_en);
-            
+
             const locInput = document.getElementById('val-loc');
             locInput.setAttribute('data-en', data.location_en);
 
@@ -323,12 +323,12 @@ const Engine = {
     },
 
     // 6. 生成 NPC
-    generateNPCs: async function() {
+    generateNPCs: async function () {
         const plot = document.getElementById('out-truth').innerText;
         const era = document.getElementById('val-era').value;
         const boss = document.getElementById('val-boss').value;
 
-        if(plot === "..." || !plot) { alert("请先在【创作台】生成模组内容！"); return; }
+        if (plot === "..." || !plot) { alert("请先在【创作台】生成模组内容！"); return; }
 
         const btn = document.querySelector('button[onclick="Engine.generateNPCs()"]');
         btn.innerHTML = "⏳ 正在联络线人..."; btn.disabled = true;
@@ -336,7 +336,7 @@ const Engine = {
         try {
             const prompt = `基于剧情"${plot}"和时代"${era}"，设计3-4位关键NPC。返回JSON数组：[{ "name": "姓名", "role": "身份", "stats": "属性", "desc": "描述", "secret": "秘密" }]`;
             const npcs = await this.callGeminiAPI(prompt);
-            
+
             const container = document.getElementById('npc-container');
             container.innerHTML = '';
             npcs.forEach(npc => {
@@ -351,16 +351,16 @@ const Engine = {
                         </div>
                     </div>`;
             });
-        } catch (e) { alert("NPC生成失败"); } 
+        } catch (e) { alert("NPC生成失败"); }
         finally { btn.innerHTML = "👥 生成 NPC 列表"; btn.disabled = false; }
     },
 
     // 7. 生成场景
-    generateScenes: async function() {
+    generateScenes: async function () {
         const location = document.getElementById('val-loc').value;
         const plot = document.getElementById('out-truth').innerText;
 
-        if(!location) { alert("请先确定地点！"); return; }
+        if (!location) { alert("请先确定地点！"); return; }
         const btn = document.querySelector('button[onclick="Engine.generateScenes()"]');
         btn.innerHTML = "⏳ 正在绘制地图..."; btn.disabled = true;
 
@@ -378,22 +378,22 @@ const Engine = {
                         <div class="scene-event">⚡ 触发事件：${scene.event}</div>
                     </div>`;
             });
-        } catch (e) { alert("场景生成失败"); } 
+        } catch (e) { alert("场景生成失败"); }
         finally { btn.innerHTML = "🔍 生成探索区域"; btn.disabled = false; }
     },
 
     // 8. 渲染模组书 (修复版)
-    renderBook: function() {
+    renderBook: function () {
         // 抓取基础信息
         const era = document.getElementById('val-era').value || "Unknown Era";
         const loc = document.getElementById('val-loc').value || "Unknown Location";
         const boss = document.getElementById('val-boss').value || "Unknown Threat";
-        
+
         // 抓取 AI 生成的标题 (如果有的话)
         const storeEl = document.getElementById('val-final-branch');
         let titleCn = storeEl.getAttribute('data-title-cn');
         let titleEn = storeEl.getAttribute('data-title-en');
-        
+
         // 抓取 AI 生成的英文地名
         let locEn = document.getElementById('val-loc').getAttribute('data-en');
 
@@ -463,9 +463,9 @@ const Engine = {
     },
 
     // 9. 通用 API 调用器 (支持 Gemini / OpenAI 格式)
-    callAI: async function(promptText) {
+    callAI: async function (promptText) {
         const config = checkApiKey();
-        
+
         if (config.provider === 'openai') {
             return await this.callOpenAI(promptText, config);
         } else {
@@ -474,16 +474,16 @@ const Engine = {
     },
 
     // Gemini API 调用
-    callGemini: async function(promptText, config) {
+    callGemini: async function (promptText, config) {
         const url = `${config.baseUrl}/models/${config.model}:generateContent?key=${config.apiKey}`;
         const payload = { contents: [{ parts: [{ text: promptText }] }] };
-        
+
         const response = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
         });
-        
+
         if (!response.ok) throw new Error(await response.text());
         const data = await response.json();
         let text = data.candidates[0].content.parts[0].text;
@@ -492,7 +492,7 @@ const Engine = {
     },
 
     // OpenAI 格式 API 调用 (兼容 OpenAI / DeepSeek / 本地模型等)
-    callOpenAI: async function(promptText, config) {
+    callOpenAI: async function (promptText, config) {
         const url = `${config.baseUrl}/chat/completions`;
         const payload = {
             model: config.model,
@@ -502,7 +502,7 @@ const Engine = {
             ],
             temperature: 0.8
         };
-        
+
         const response = await fetch(url, {
             method: "POST",
             headers: {
@@ -511,7 +511,7 @@ const Engine = {
             },
             body: JSON.stringify(payload)
         });
-        
+
         if (!response.ok) throw new Error(await response.text());
         const data = await response.json();
         let text = data.choices[0].message.content;
@@ -520,7 +520,7 @@ const Engine = {
     },
 
     // 兼容旧调用 (保持向后兼容)
-    callGeminiAPI: async function(promptText) {
+    callGeminiAPI: async function (promptText) {
         return await this.callAI(promptText);
     },
 
@@ -537,12 +537,12 @@ const Engine = {
 // ==========================================
 const ArchiveSystem = {
     // 保存当前状态
-    saveCurrent: function() {
+    saveCurrent: function () {
         // 1. 获取关键信息用于标题
         const era = document.getElementById('val-era').value || "未知时代";
         const loc = document.getElementById('val-loc').value || "未知地点";
         const titleCn = document.getElementById('val-final-branch').getAttribute('data-title-cn') || `${loc}的怪谈`;
-        
+
         // 2. 打包所有数据 (Data Serialization)
         const saveData = {
             id: Date.now(), // 使用时间戳作为唯一ID
@@ -577,10 +577,10 @@ const ArchiveSystem = {
     },
 
     // 渲染存档列表
-    renderList: function() {
+    renderList: function () {
         const container = document.getElementById('archive-list');
         const archives = JSON.parse(localStorage.getItem('arkham_archives') || "[]");
-        
+
         container.innerHTML = '';
 
         if (archives.length === 0) {
@@ -604,8 +604,8 @@ const ArchiveSystem = {
     },
 
     // 读取存档
-    load: function(id) {
-        if(!confirm("⚠️ 读取存档将覆盖当前工作台的内容，确定吗？")) return;
+    load: function (id) {
+        if (!confirm("⚠️ 读取存档将覆盖当前工作台的内容，确定吗？")) return;
 
         const archives = JSON.parse(localStorage.getItem('arkham_archives') || "[]");
         const target = archives.find(a => a.id === id);
@@ -617,13 +617,13 @@ const ArchiveSystem = {
         document.getElementById('val-loc').value = target.inputs.loc;
         document.getElementById('val-boss').value = target.inputs.boss;
         document.getElementById('val-item').value = target.inputs.item;
-        
+
         // 2. 恢复分支和隐藏属性
         const branchInput = document.getElementById('val-final-branch');
         branchInput.value = target.inputs.branch;
-        if(target.inputs.titleCn) branchInput.setAttribute('data-title-cn', target.inputs.titleCn);
-        if(target.inputs.titleEn) branchInput.setAttribute('data-title-en', target.inputs.titleEn);
-        if(target.inputs.locEn) document.getElementById('val-loc').setAttribute('data-en', target.inputs.locEn);
+        if (target.inputs.titleCn) branchInput.setAttribute('data-title-cn', target.inputs.titleCn);
+        if (target.inputs.titleEn) branchInput.setAttribute('data-title-en', target.inputs.titleEn);
+        if (target.inputs.locEn) document.getElementById('val-loc').setAttribute('data-en', target.inputs.locEn);
 
         // 3. 恢复生成的内容
         document.getElementById('out-truth').innerText = target.content.truth;
@@ -634,9 +634,9 @@ const ArchiveSystem = {
 
         // 4. 恢复显示的区域
         // 如果有内容，显示完整模组区
-        if(target.content.truth && target.content.truth !== "...") {
+        if (target.content.truth && target.content.truth !== "...") {
             document.getElementById('section-full').style.display = 'block';
-            document.getElementById('section-branch').style.opacity = '1'; 
+            document.getElementById('section-branch').style.opacity = '1';
             document.getElementById('section-branch').style.pointerEvents = 'auto';
         }
 
@@ -645,14 +645,14 @@ const ArchiveSystem = {
         // 手动高亮工作台按钮
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         document.querySelector('.nav-item').classList.add('active'); // 假设第一个是工作台
-        
+
         alert("📖 记忆已回溯。");
     },
 
     // 删除存档
-    remove: function(id) {
-        if(!confirm("🔥 确定要永久销毁这份档案吗？")) return;
-        
+    remove: function (id) {
+        if (!confirm("🔥 确定要永久销毁这份档案吗？")) return;
+
         let archives = JSON.parse(localStorage.getItem('arkham_archives') || "[]");
         archives = archives.filter(a => a.id !== id);
         localStorage.setItem('arkham_archives', JSON.stringify(archives));
@@ -668,177 +668,3 @@ function setTheme(themeName) {
 }
 setTheme('yellow');
 
-// ==========================================
-// PDF 导出功能 (智能分页版)
-// ==========================================
-async function exportToPDF() {
-    const bookContent = document.getElementById('book-content');
-    
-    if (!bookContent || bookContent.innerText.includes('请先在【创作台】')) {
-        alert('请先生成模组内容！');
-        return;
-    }
-
-    // 显示加载提示
-    const btn = document.querySelector('button[onclick="exportToPDF()"]');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '⏳ 正在生成 PDF...';
-    btn.disabled = true;
-
-    try {
-        const { jsPDF } = window.jspdf;
-        
-        // 创建 PDF (A4)
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const margin = 15; // 页边距 (mm)
-        const contentWidth = pdfWidth - margin * 2;
-        const contentHeight = pdfHeight - margin * 2;
-        
-        // 获取当前主题的背景色
-        const computedStyle = getComputedStyle(bookContent);
-        const bgColor = computedStyle.backgroundColor || '#fdf6e3';
-        
-        // 临时克隆内容用于分页处理
-        const clone = bookContent.cloneNode(true);
-        clone.style.width = '760px';
-        clone.style.position = 'absolute';
-        clone.style.left = '-9999px';
-        clone.style.background = bgColor;
-        clone.style.padding = '20px';
-        document.body.appendChild(clone);
-        
-        // 计算缩放比例
-        const scale = 2;
-        const pxToMm = contentWidth / 800; // 800px (760 + padding) 对应 contentWidth mm
-        
-        // 收集所有章节块 (.book-section)
-        let sections = clone.querySelectorAll('.book-section');
-        
-        // 如果没有找到 .book-section，回退到直接子元素
-        if (sections.length === 0) {
-            sections = clone.children;
-        }
-        
-        let currentY = margin;
-        let isFirstBlock = true;
-        
-        // 辅助函数：渲染元素到 PDF
-        async function renderElementToPDF(element, forceNewPage = false) {
-            const canvas = await html2canvas(element, {
-                scale: scale,
-                useCORS: true,
-                backgroundColor: bgColor,
-                logging: false
-            });
-            
-            const imgData = canvas.toDataURL('image/jpeg', 0.95);
-            const imgHeightMm = (canvas.height / scale) * pxToMm;
-            
-            // 检查是否需要新页面
-            if (forceNewPage || (!isFirstBlock && currentY + imgHeightMm > pdfHeight - margin)) {
-                pdf.addPage();
-                // 新页面添加背景色
-                pdf.setFillColor(bgColor);
-                currentY = margin;
-            }
-            
-            // 如果单个元素太高（超过一页），需要分割
-            if (imgHeightMm > contentHeight) {
-                const totalHeightPx = canvas.height / scale;
-                const pageHeightPx = contentHeight / pxToMm;
-                let offsetY = 0;
-                let isFirstSlice = true;
-                
-                while (offsetY < totalHeightPx) {
-                    if (!isFirstSlice) {
-                        pdf.addPage();
-                        currentY = margin;
-                    }
-                    
-                    const remainingHeight = totalHeightPx - offsetY;
-                    const sliceHeight = Math.min(pageHeightPx, remainingHeight);
-                    
-                    // 创建分片 canvas
-                    const sliceCanvas = document.createElement('canvas');
-                    sliceCanvas.width = canvas.width;
-                    sliceCanvas.height = sliceHeight * scale;
-                    const ctx = sliceCanvas.getContext('2d');
-                    
-                    // 绘制背景色
-                    ctx.fillStyle = bgColor;
-                    ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-                    
-                    // 绘制内容片段
-                    ctx.drawImage(
-                        canvas,
-                        0, offsetY * scale, canvas.width, sliceHeight * scale,
-                        0, 0, canvas.width, sliceHeight * scale
-                    );
-                    
-                    const sliceImgData = sliceCanvas.toDataURL('image/jpeg', 0.95);
-                    const sliceHeightMm = sliceHeight * pxToMm;
-                    
-                    pdf.addImage(sliceImgData, 'JPEG', margin, currentY, contentWidth, sliceHeightMm);
-                    
-                    offsetY += sliceHeight;
-                    currentY = margin + sliceHeightMm;
-                    isFirstSlice = false;
-                }
-            } else {
-                // 正常添加
-                pdf.addImage(imgData, 'JPEG', margin, currentY, contentWidth, imgHeightMm);
-                currentY += imgHeightMm + 2; // 添加小间距
-            }
-            
-            isFirstBlock = false;
-        }
-        
-        // 遍历每个章节
-        for (let section of sections) {
-            // 预估章节高度
-            const tempCanvas = await html2canvas(section, {
-                scale: 1,
-                useCORS: true,
-                backgroundColor: bgColor,
-                logging: false
-            });
-            const estimatedHeightMm = tempCanvas.height * pxToMm;
-            
-            // 如果章节能放入当前页剩余空间，直接渲染整个章节
-            if (currentY + estimatedHeightMm <= pdfHeight - margin || isFirstBlock) {
-                await renderElementToPDF(section);
-            } else {
-                // 章节太大，需要分页处理
-                // 先翻页
-                pdf.addPage();
-                currentY = margin;
-                
-                // 如果整个章节能放入一页，直接渲染
-                if (estimatedHeightMm <= contentHeight) {
-                    await renderElementToPDF(section);
-                } else {
-                    // 章节超过一页，需要分割渲染
-                    await renderElementToPDF(section);
-                }
-            }
-        }
-        
-        // 清理临时元素
-        document.body.removeChild(clone);
-        
-        // 获取标题用于文件名
-        const titleCn = document.getElementById('val-final-branch')?.getAttribute('data-title-cn') || '克苏鲁模组';
-        const fileName = `${titleCn}_${new Date().toLocaleDateString('zh-CN')}.pdf`;
-        
-        pdf.save(fileName);
-        
-    } catch (e) {
-        console.error('PDF 生成失败:', e);
-        alert('PDF 生成失败: ' + e.message);
-    } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    }
-}

@@ -2,31 +2,39 @@
 :root {
     /* 通用变量 */
     --sidebar-width: 260px;
-    
+
     /* 默认：黄衣之王 (Yellow) */
     --bg-app: #1a1a1a;
     --bg-panel: #fdf6e3;
     --text-primary: #433422;
     --text-muted: #8b7d6b;
-    --accent: #8a0303;          /* 正文强调色：暗红 */
-    --nav-text-active: #d4af37; /* 侧边栏选中色：金色 */
+    --accent: #8a0303;
+    /* 正文强调色：暗红 */
+    --nav-text-active: #d4af37;
+    /* 侧边栏选中色：金色 */
     --border: #d4c5a9;
     --font-serif: 'Georgia', 'Times New Roman', serif;
-    --shadow-card: 0 4px 20px rgba(0,0,0,0.5);
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.5);
     --btn-hover: #ece0c0;
 }
 
 /* 主题 2: 黑色大丽花 (Noir) - 修正版 */
 [data-theme="noir"] {
-    --bg-app: #0f0f0f;          /* 背景更黑 */
-    --bg-panel: #e0e0e0;        /* 纸张：冷灰 */
-    --text-primary: #000000;    /* 正文：纯黑 */
+    --bg-app: #0f0f0f;
+    /* 背景更黑 */
+    --bg-panel: #e0e0e0;
+    /* 纸张：冷灰 */
+    --text-primary: #000000;
+    /* 正文：纯黑 */
     --text-muted: #444444;
-    --accent: #000000;          /* 正文强调：纯黑（配合加粗） */
-    --nav-text-active: #ffffff; /* 【核心修正】侧边栏选中：纯白 */
+    --accent: #000000;
+    /* 正文强调：纯黑（配合加粗） */
+    --nav-text-active: #ffffff;
+    /* 【核心修正】侧边栏选中：纯白 */
     --border: #666666;
     --font-serif: 'Courier New', monospace;
-    --shadow-card: 8px 8px 0px rgba(255,255,255,0.1); /* 阴影改成微弱的白光，增加冷峻感 */
+    --shadow-card: 8px 8px 0px rgba(255, 255, 255, 0.1);
+    /* 阴影改成微弱的白光，增加冷峻感 */
     --btn-hover: #cccccc;
 }
 
@@ -37,7 +45,8 @@
     --text-primary: #93a1a1;
     --text-muted: #586e75;
     --accent: #2aa198;
-    --nav-text-active: #2aa198; /* 侧边栏选中：青色 */
+    --nav-text-active: #2aa198;
+    /* 侧边栏选中：青色 */
     --border: #073642;
     --font-serif: 'Segoe UI', sans-serif;
     --shadow-card: 0 0 15px rgba(42, 161, 152, 0.2);
@@ -46,91 +55,232 @@
 
 /* --- 2. 基础布局 --- */
 body {
-    margin: 0; font-family: var(--font-serif);
-    background-color: var(--bg-app); color: var(--text-primary);
-    display: flex; height: 100vh; transition: background 0.5s ease;
+    margin: 0;
+    font-family: var(--font-serif);
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+    display: flex;
+    height: 100vh;
+    transition: background 0.5s ease;
 }
 
 /* --- 侧边栏优化 --- */
 .sidebar {
     width: var(--sidebar-width);
-    background: rgba(0,0,0,0.25); /* 加深一点背景 */
+    background: rgba(0, 0, 0, 0.25);
+    /* 加深一点背景 */
     backdrop-filter: blur(15px);
-    border-right: 1px solid rgba(255,255,255,0.05);
-    display: flex; flex-direction: column;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
     flex-shrink: 0;
 }
 
 .logo {
-    padding: 40px 30px; font-size: 1.6rem; color: #fff; /* Logo 始终白色 */
-    letter-spacing: 3px; border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 40px 30px;
+    font-size: 1.6rem;
+    color: #fff;
+    /* Logo 始终白色 */
+    letter-spacing: 3px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     text-transform: uppercase;
 }
 
 /* 导航选项 */
 .nav-item {
-    padding: 22px 30px; cursor: pointer;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
-    display: flex; flex-direction: column; gap: 4px; position: relative;
+    padding: 22px 30px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
     transition: 0.3s;
 }
-.nav-cn { font-size: 0.95rem; font-weight: bold; color: #777; transition: 0.3s; }
-.nav-en { font-size: 0.6rem; color: #555; text-transform: uppercase; letter-spacing: 2px; }
+
+.nav-cn {
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #777;
+    transition: 0.3s;
+}
+
+.nav-en {
+    font-size: 0.6rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
 
 /* 选中高亮逻辑优化 */
-.nav-item:hover .nav-cn { color: #aaa; }
-.nav-item.active { background: rgba(255,255,255,0.05); }
-.nav-item.active .nav-cn { color: var(--nav-text-active); } /* 使用专用变量 */
-.nav-item.active .nav-en { color: var(--nav-text-active); opacity: 0.7; }
+.nav-item:hover .nav-cn {
+    color: #aaa;
+}
+
+.nav-item.active {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-item.active .nav-cn {
+    color: var(--nav-text-active);
+}
+
+/* 使用专用变量 */
+.nav-item.active .nav-en {
+    color: var(--nav-text-active);
+    opacity: 0.7;
+}
+
 .nav-item.active::before {
-    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-    width: 3px; background-color: var(--nav-text-active);
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: var(--nav-text-active);
 }
 
 /* 底部主题切换器 (修复边距) */
 .theme-switcher {
-    margin-top: auto; padding: 30px;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    padding-bottom: 50px; /* 【核心修正】增加底部距离，不贴边 */
+    margin-top: auto;
+    padding: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 50px;
+    /* 【核心修正】增加底部距离，不贴边 */
 }
-.theme-label { font-size: 0.7rem; color: #666; margin-bottom: 12px; letter-spacing: 1px; }
+
+.theme-label {
+    font-size: 0.7rem;
+    color: #666;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+}
+
 .theme-btn {
-    width: 20px; height: 20px; border-radius: 50%; display: inline-block;
-    margin-right: 10px; cursor: pointer; transition: transform 0.2s; border: 2px solid rgba(255,255,255,0.2);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    border: 2px solid rgba(255, 255, 255, 0.2);
 }
-.theme-btn:hover { transform: scale(1.2); border-color: #fff; }
+
+.theme-btn:hover {
+    transform: scale(1.2);
+    border-color: #fff;
+}
 
 /* --- 3. 主内容区 --- */
-.main-content { flex: 1; padding: 60px; overflow-y: auto; }
+.main-content {
+    flex: 1;
+    padding: 60px;
+    overflow-y: auto;
+}
 
 .section-card {
-    background-color: var(--bg-panel); color: var(--text-primary);
-    padding: 50px; margin-bottom: 40px; border-radius: 2px;
-    box-shadow: var(--shadow-card); border-top: 4px solid var(--accent);
+    background-color: var(--bg-panel);
+    color: var(--text-primary);
+    padding: 50px;
+    margin-bottom: 40px;
+    border-radius: 2px;
+    box-shadow: var(--shadow-card);
+    border-top: 4px solid var(--accent);
 }
 
-h2 { border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-top: 0; font-weight: normal; font-size: 1.8rem; }
-h2 span { font-size: 0.5em; color: var(--accent); margin-left: 15px; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
-h3 { color: var(--accent); border-left: 4px solid var(--accent); padding-left: 15px; margin-top: 40px; }
+h2 {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 15px;
+    margin-top: 0;
+    font-weight: normal;
+    font-size: 1.4rem;
+    /* 22.4px relative to 16px */
+}
+
+h2 span {
+    font-size: 0.5em;
+    color: var(--accent);
+    margin-left: 15px;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+h3 {
+    color: var(--accent);
+    border-left: 4px solid var(--accent);
+    padding-left: 15px;
+    margin-top: 40px;
+}
 
 /* 输入框与按钮 */
-.grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 30px; }
-.info-box label { display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 8px; font-weight: bold; text-transform: uppercase; }
-.input-field {
-    width: 100%; background: transparent; border: none;
-    border-bottom: 2px dashed var(--border); color: var(--text-primary);
-    font-family: var(--font-serif); font-size: 1.2rem; padding: 8px 0; outline: none;
+.grid-2x2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 30px;
 }
+
+.info-box label {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.input-field {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 2px dashed var(--border);
+    color: var(--text-primary);
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    padding: 8px 0;
+    outline: none;
+}
+
 .btn {
-    width: 100%; padding: 15px; border: none; cursor: pointer;
-    font-family: var(--font-serif); font-weight: bold; font-size: 1rem;
-    text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%;
+    padding: 15px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-serif);
+    font-weight: bold;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     transition: 0.2s;
 }
-.ai-btn { background-color: var(--accent); color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-.ai-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-2px); }
-.primary-btn { border: 1px solid var(--text-primary); color: var(--text-primary); background: transparent; }
-.primary-btn:hover:not(:disabled) { background: var(--btn-hover); }
+
+.ai-btn {
+    background-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.ai-btn:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+.primary-btn {
+    border: 1px solid var(--text-primary);
+    color: var(--text-primary);
+    background: transparent;
+}
+
+.primary-btn:hover:not(:disabled) {
+    background: var(--btn-hover);
+}
 
 /* 按钮禁用状态 */
 .btn:disabled {
@@ -145,63 +295,122 @@ h3 { color: var(--accent); border-left: 4px solid var(--accent); padding-left: 1
 textarea.input-field {
     border: 1px solid var(--border);
     padding: 15px;
-    background: rgba(0,0,0,0.03);
+    background: rgba(0, 0, 0, 0.03);
     line-height: 1.6;
     /* 新增：加粗字体，让最终剧情更醒目 */
     font-weight: bold;
 }
 
 /* 分支与列表 */
-.branch-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.branch-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
 
 /* --- 【修改 2】分支卡片样式优化 --- */
-.branch-card { 
-    background: rgba(0,0,0,0.03); 
-    border: 1px solid var(--border); 
-    padding: 25px; 
-    cursor: pointer; 
+.branch-card {
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid var(--border);
+    padding: 25px;
+    cursor: pointer;
 }
 
 /* 新增：专门控制分支标题 (strong 标签) 的样式 */
 .branch-card strong {
     display: block;
-    color: var(--accent); /* 使用主题强调色高亮标题 */
+    color: var(--accent);
+    /* 使用主题强调色高亮标题 */
     font-size: 1.1rem;
     margin-bottom: 10px;
-    border-bottom: 1px dashed var(--border); /* 可选：加一个小分割线，更像档案 */
+    border-bottom: 1px dashed var(--border);
+    /* 可选：加一个小分割线，更像档案 */
     padding-bottom: 5px;
 }
 
-.branch-card.selected { border: 2px solid var(--accent); background: rgba(var(--accent), 0.05); }
-
-/* 视图切换 */
-.view-section { display: none; animation: fadeIn 0.4s ease-out; }
-.active-view { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-/* NPC 与 场景 */
-.npc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
-.npc-card { background: rgba(0,0,0,0.04); border: 1px solid var(--border); padding: 20px; display: flex; gap: 20px; }
-.npc-portrait { width: 80px; height: 100px; background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 2rem; border: 2px solid var(--text-primary); }
-.npc-name { font-weight: bold; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 5px; }
-.scene-box { border-left: 4px solid var(--text-muted); background: rgba(0,0,0,0.02); margin-bottom: 20px; padding: 25px; }
-.scene-title { font-weight: bold; color: var(--text-primary); font-size: 1.1rem; }
-.scene-event { color: var(--accent); font-weight: bold; margin-top: 10px; font-style: italic; }
-
-/* 这部分控制预览页的"书本感"和打印效果 - 已移至下方，跟随主题 */
-
-/* 打印时的特殊设置：隐藏侧边栏，只显示书 */
-@media print {
-    body { background: white; height: auto; display: block; }
-    .sidebar, .btn, .theme-switcher, .grid-2x2, .input-field { display: none !important; }
-    .main-content { padding: 0; overflow: visible; }
-    .section-card { box-shadow: none; border: none; padding: 0; margin: 0; }
-    .view-section { display: none; }
-    #view-preview { display: block !important; } /* 强制只显示预览页 */
-    .book-container { box-shadow: none; padding: 0; margin: 0; width: 100%; max-width: none; }
+.branch-card.selected {
+    border: 2px solid var(--accent);
+    background: rgba(var(--accent), 0.05);
 }
 
-/* 书内排版样式 - 跟随主题 */
+/* 视图切换 */
+.view-section {
+    display: none;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.active-view {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* NPC 与 场景 */
+.npc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.npc-card {
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--border);
+    padding: 20px;
+    display: flex;
+    gap: 20px;
+}
+
+.npc-portrait {
+    width: 80px;
+    height: 100px;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    border: 2px solid var(--text-primary);
+}
+
+.npc-name {
+    font-weight: bold;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+}
+
+.scene-box {
+    border-left: 4px solid var(--text-muted);
+    background: rgba(0, 0, 0, 0.02);
+    margin-bottom: 20px;
+    padding: 25px;
+}
+
+.scene-title {
+    font-weight: bold;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.scene-event {
+    color: var(--accent);
+    font-weight: bold;
+    margin-top: 10px;
+    font-style: italic;
+}
+
+
+/* --- 书籍排版 (Book Container) - 屏幕显示用 --- */
 .book-container {
     background-color: var(--bg-panel);
     color: var(--text-primary);
@@ -210,163 +419,356 @@ textarea.input-field {
     margin: 0 auto;
     box-shadow: var(--shadow-card);
     font-family: var(--font-serif);
+
+    /* 关键排版属性 */
+    column-count: 2;
+    column-gap: 40px;
+    column-fill: balance;
+    /* 强制平衡两栏高度，避免右栏空白 */
+    height: auto;
+    min-height: 800px;
 }
 
-.book-title { 
-    font-size: 2.5rem; 
-    text-align: center; 
-    border-bottom: 2px solid var(--text-primary); 
-    padding-bottom: 20px; 
-    margin-bottom: 40px; 
-    font-weight: bold; 
-    color: var(--text-primary);
-}
-.book-title span {
-    font-size: 1.2rem; 
-    font-family: var(--font-serif); 
-    font-weight: normal; 
-    display: block; 
-    margin-top: 10px; 
-    letter-spacing: 2px; 
-    text-transform: uppercase;
-    color: var(--text-muted);
-}
-.book-meta { 
-    text-align: center; 
-    font-style: italic; 
-    color: var(--text-muted); 
-    margin-bottom: 30px; 
-    display: flex; 
-    justify-content: center; 
-    gap: 30px; 
-}
-
-/* 书籍章节分块 - 便于 PDF 智能分页 */
-.book-section {
-    margin-bottom: 30px;
-    text-align: justify;
-    line-height: 1.6;
-    break-inside: avoid-page;
-    page-break-inside: avoid;
-}
+/* 标题区域跨栏 */
 .book-section.book-header-section {
+    column-span: all;
+    /* 跨越两栏 */
     text-align: center;
     margin-bottom: 40px;
 }
 
-/* 保留旧的双栏布局类以兼容 */
-.book-columns { 
-    column-count: 2; 
-    column-gap: 40px; 
-    text-align: justify; 
-    line-height: 1.6; 
-}
-
-.book-h1 { 
-    font-size: 1.4rem; 
-    font-weight: bold; 
-    border-bottom: 1px solid var(--border); 
-    margin-top: 30px; 
-    margin-bottom: 15px; 
-    color: var(--accent); 
-    break-after: avoid; 
-}
-.book-p { 
-    margin-bottom: 15px; 
-    font-size: 1rem; 
-    color: var(--text-primary);
-}
-.book-box { 
-    background: rgba(0,0,0,0.05); 
-    padding: 15px; 
-    border: 1px solid var(--border); 
-    margin: 20px 0; 
-    break-inside: avoid; 
-}
-
-/* 书内列表样式 */
-.book-container ul {
-    color: var(--text-primary);
-}
-.book-container li {
+.book-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    border-bottom: 2px solid var(--text-primary);
+    padding-bottom: 10px;
     margin-bottom: 10px;
 }
-.book-container li strong {
-    color: var(--accent);
-}
 
-/* --- 4. 档案室样式 (新增) --- */
-.archive-card {
-    background: rgba(0,0,0,0.03);
-    border: 1px solid var(--border);
-    padding: 20px;
-    position: relative;
-    transition: 0.3s;
-}
-.archive-card:hover {
-    border-color: var(--accent);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-.archive-title {
-    font-weight: bold;
-    color: var(--accent);
-    font-size: 1.1rem;
-    margin-bottom: 5px;
-    border-bottom: 1px dashed var(--border);
-    padding-bottom: 5px;
-}
-.archive-date {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    font-family: sans-serif;
-    margin-bottom: 15px;
-}
-.archive-actions {
-    display: flex;
-    gap: 10px;
-}
-.btn-small {
-    padding: 8px 15px;
-    font-size: 0.8rem;
-    border: 1px solid var(--border);
-    background: transparent;
-    cursor: pointer;
-    color: var(--text-primary);
+.book-title span {
+    font-size: 1.2rem;
+    font-weight: normal;
+    display: block;
     text-transform: uppercase;
 }
-.btn-small:hover {
-    background: var(--btn-hover);
-    color: var(--accent);
-}
-.btn-delete:hover {
-    border-color: #8a0303;
-    color: #8a0303;
-    background: rgba(138, 3, 3, 0.1);
-}
 
-/* --- 5. 密钥弹窗样式 (Modal) --- */
-.modal-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.7); /* 半透明黑色背景 */
-    backdrop-filter: blur(5px);   /* 背景模糊 */
-    display: flex; align-items: center; justify-content: center;
-    z-index: 9999; /* 保证在最上层 */
-    animation: fadeIn 0.3s;
-}
-
-.modal-box {
-    background: var(--bg-panel);
-    padding: 40px;
-    width: 400px;
-    border-radius: 4px;
-    border: 2px solid var(--accent);
-    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+.book-meta {
     text-align: center;
+    font-style: italic;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: center;
+    gap: 30px;
 }
 
-.modal-box h3 {
-    margin-top: 0;
+.book-h1 {
+    font-size: 1.4rem;
+    /* 22.4px */
+    font-weight: bold;
     color: var(--accent);
-    border-bottom: 1px dashed var(--border);
+    margin-top: 40px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--border);
     padding-bottom: 10px;
+}
+
+/* 章节内元素避免截断 */
+/* 章节内元素避免截断 */
+.npc-card,
+.scene-box,
+li {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+}
+
+/* 元素间距优化 */
+.npc-card,
+.scene-box {
+    margin-bottom: 20px;
+    display: block;
+    /* 确保是块级元素 */
+}
+
+/* 打印时的特殊设置：隐藏侧边栏，只显示书 */
+@media print {
+    body {
+        background: white;
+        height: auto;
+        display: block;
+    }
+
+    .sidebar,
+    .btn,
+    .theme-switcher,
+    .grid-2x2,
+    .input-field {
+        display: none !important;
+    }
+
+    .main-content {
+        padding: 0;
+        overflow: visible;
+    }
+
+    .section-card {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .view-section {
+        display: none;
+    }
+
+    #view-preview {
+        display: block !important;
+    }
+
+    /* 强制只显示预览页 */
+    .book-container {
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        max-width: none;
+        column-count: 2;
+        /* 打印时也保持双栏 */
+        column-gap: 40px;
+        column-fill: balance;
+    }
+}
+
+/* --- 后台 PDF 排版引擎专用样式 (Typesetting Engine) --- */
+#print-root {
+    position: absolute;
+    left: -10000px;
+    top: 0;
+    /* 必须是可见的，但可以在屏幕外 */
+    visibility: visible;
+}
+
+/* A4 页面容器 */
+.print-page {
+    width: 210mm;
+    height: 297mm;
+    background: var(--bg-panel);
+    /* 适配主题 */
+    color: var(--text-primary);
+    padding: 25mm;
+    /* Sync with JS margin 25mm */
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    /* 允许跨栏元素换行 */
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+/* 排版栏 */
+.print-column {
+    width: calc((100% - 10mm) / 2);
+    /* (总宽 - 间距) / 2 */
+    height: 100%;
+    /* margin-right: 10mm; 在 JS 中设置了，但 CSS 兜底 */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* 打印原子样式重置 */
+.print-atom {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 5mm;
+    font-size: 12pt;
+    line-height: 1.5;
+    text-align: justify;
+    color: var(--text-primary);
+    /* 适配主题 */
+}
+
+/* 保持原来 app 的一些样式但做适配 */
+.print-h1 {
+    font-size: 17pt;
+    /* 22.4px equivalent */
+    font-weight: bold;
+    border-bottom: 2pt solid var(--accent);
+    margin-bottom: 10mm;
+    margin-top: 5mm;
+    color: var(--accent);
+    width: 100%;
+    text-align: center;
+    page-break-after: avoid;
+    break-after: avoid;
+}
+
+.print-h2 {
+    font-size: 16pt;
+    font-weight: bold;
+    border-bottom: 1pt solid var(--border);
+    margin-top: 5mm;
+    margin-bottom: 3mm;
+    color: var(--text-primary);
+    width: 100%;
+    page-break-after: avoid;
+    break-after: avoid;
+}
+
+.print-atom p {
+    margin: 0 0 3mm 0;
+    text-indent: 2em;
+}
+
+.print-npc-card {
+    border: 1pt solid var(--border);
+    padding: 3mm;
+    display: flex;
+    gap: 3mm;
+    margin-bottom: 10mm;
+    /* 增加到 10mm */
+    background: rgba(0, 0, 0, 0.05);
+    /* 半透明适配所有深浅色主题 */
+    break-inside: auto;
+    /* 允许跨栏 */
+}
+
+.print-npc-portrait {
+    width: 15mm;
+    height: 20mm;
+    border: 1pt solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20pt;
+    flex-shrink: 0;
+    /* 禁止头像压缩 */
+}
+
+.print-npc-info {
+    flex: 1;
+    display: block;
+    /* 确保内部块级排版 */
+}
+
+.print-npc-name {
+    font-weight: bold;
+    font-size: 11pt;
+    border-bottom: 0.5pt solid var(--border);
+    margin-bottom: 1mm;
+    color: var(--accent);
+}
+
+.print-scene-box {
+    border-left: 2mm solid var(--text-muted);
+    background: rgba(0, 0, 0, 0.02);
+    padding: 3mm;
+    margin-bottom: 5mm;
+    font-size: 10pt;
+    break-inside: auto;
+    /* 允许跨栏 */
+}
+
+.print-fragment-start {
+    border-bottom: none;
+    padding-bottom: 2mm;
+    margin-bottom: 0 !important;
+}
+
+.print-fragment-end {
+    border-top: none;
+    padding-top: 2mm;
+    margin-top: 0 !important;
+}
+
+/* 跨栏标题样式 */
+.print-header-span {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10mm;
+    border-bottom: 2px solid var(--text-primary);
+    padding-bottom: 5mm;
+}
+
+.print-header-span .book-title {
+    font-size: 28pt;
+    border: none;
+    margin: 0;
+}
+
+.print-header-span .book-meta {
+    justify-content: center;
+    gap: 10mm;
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+/* ======================== */
+/*  Split Button & Dropdown */
+/* ======================== */
+
+.split-btn-group {
+    display: inline-flex;
+    align-items: stretch;
+    position: relative;
+    vertical-align: middle;
+    margin-right: 10px;
+}
+
+.split-btn-group .btn-main {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    margin: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+}
+
+.split-btn-group .btn-toggle {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    margin: 0;
+    padding: 0 10px;
+    width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1000;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Show menu when explicitly toggled */
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 8px 16px;
+    clear: both;
+    color: var(--text-primary);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.dropdown-menu a:hover {
+    background-color: var(--bg-main);
+    color: var(--accent);
 }
