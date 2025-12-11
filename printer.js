@@ -6,16 +6,20 @@
 
 class Typesetter {
     constructor() {
-        // A4 纸张配置 (单位: mm)
+        // [Strict Sync] 使用 DOCX 导出的精确参数 (Twips -> mm)
+        // Width: 12000 twips = 211.67 mm (Not standard A4 210mm)
+        // Margin: 900 twips = 15.875 mm
+        // Gap: 600 twips = 10.58 mm
+        // Height: 11.69 inch = 297 mm
         this.config = {
-            pageWidth: 210,
+            pageWidth: 211.67,
             pageHeight: 297,
-            margin: 25, // 进一步增大页边距 (原20mm->25mm)
-            colGap: 10,
-            // 计算属性 (25mm * 2 = 50mm)
-            contentWidth: 210 - 50, // 160mm
-            contentHeight: 297 - 50, // 247mm
-            colWidth: (160 - 10) / 2 // 75mm
+            margin: 15.875,
+            colGap: 10.58,
+            // 动态计算
+            contentWidth: 211.67 - (15.875 * 2), // ~179.92mm
+            contentHeight: 297 - (15.875 * 2), // ~265.25mm
+            colWidth: (211.67 - (15.875 * 2) - 10.58) / 2 // ~84.67mm
         };
 
         // 运行时状态
@@ -201,11 +205,39 @@ class Typesetter {
         this.currentY = 0;
     }
 
+    getRemainingHeight() {
+        const col = this.currentPage.cols[this.currentColIndex];
+        const page = this.currentPage.el;
+        const pageRect = page.getBoundingClientRect();
+        const pageStyle = window.getComputedStyle(page);
+        const paddingBottom = parseFloat(pageStyle.paddingBottom || 0);
+        // Allow 20px tolerance
+        const limitBottom = pageRect.bottom - paddingBottom + 20;
+
+        if (col.children.length === 0) {
+            const colRect = col.getBoundingClientRect();
+            // If col is empty, remaining is from col top (or header bottom) to limit
+            // colRect.top might be pushed down by header
+            return Math.max(0, limitBottom - colRect.top);
+        }
+
+        const lastChild = col.lastElementChild;
+        const lastRect = lastChild.getBoundingClientRect();
+        const lastStyle = window.getComputedStyle(lastChild);
+        const marginBottom = parseFloat(lastStyle.marginBottom || 0);
+
+        const usedBottom = lastRect.bottom + marginBottom;
+        return Math.max(0, limitBottom - usedBottom);
+    }
+
     async placeAtom(atom, root) {
+        // 跨栏元素
         // 跨栏元素
         if (atom.type === 'spanning') {
             const page = this.currentPage.el;
-            if (this.currentY > 0 || this.currentColIndex > 0) {
+            const hasContent = this.currentPage.cols.some(c => c.children.length > 0);
+
+            if (hasContent) {
                 this.createNewPage(root);
             }
             const col1 = this.currentPage.cols[0];
@@ -224,34 +256,32 @@ class Typesetter {
             return;
         }
 
-        const headerOffset = this.currentPage.headerHeight || 0;
-        const availableSpaceOnPage = this.maxColHeightPx - headerOffset;
-
         const currentCol = this.currentPage.cols[this.currentColIndex];
         currentCol.appendChild(atom.node);
 
-        const height = atom.node.offsetHeight;
-        const remainingY = availableSpaceOnPage - this.currentY;
+        const atomRect = atom.node.getBoundingClientRect();
+        const style = window.getComputedStyle(atom.node);
+        const marginBottom = parseFloat(style.marginBottom || 0);
 
-        // 1. 放得下
-        if (height <= remainingY) {
-            this.currentY += height;
-            const style = window.getComputedStyle(atom.node);
-            this.currentY += parseFloat(style.marginBottom || 0);
+        // Limit is Page Bottom - Padding Bottom
+        const page = this.currentPage.el;
+        const pageRect = page.getBoundingClientRect();
+        const pageStyle = window.getComputedStyle(page);
+        const paddingBottom = parseFloat(pageStyle.paddingBottom || 0);
+        // Allow 20px tolerance
+        const limitBottom = pageRect.bottom - paddingBottom + 20;
+
+        // Check fit (allow 1px small buffer on top of tolerance)
+        if (atomRect.bottom + marginBottom <= limitBottom + 1) {
+            // Fits
             return;
         }
 
-        // 2. 放不下
+        // Doesn't fit
         currentCol.removeChild(atom.node);
 
-        // 策略 A: 空间太小 (<40px) -> 换栏
-        if (remainingY < 40) {
-            this.moveToNextColumn(root);
-            await this.placeAtom(atom, root);
-            return;
-        }
+        const remainingY = this.getRemainingHeight();
 
-        // 分割逻辑
         await this.splitAndPlace(atom, remainingY, root);
     }
 
@@ -265,7 +295,19 @@ class Typesetter {
     }
 
     async splitAndPlace(atom, availableHeight, root) {
+        // H1/H2 标题: 如果高度够就放，不够就移到下栏 (但不留大空白)
         if (atom.type === 'h1' || atom.type === 'h2') {
+            // 尝试直接放置 - 如果剩余空间足够放标题
+            const currentCol = this.currentPage.cols[this.currentColIndex];
+            currentCol.appendChild(atom.node);
+            const height = atom.node.offsetHeight;
+            if (height <= availableHeight) {
+                // 能放下
+                this.currentY += height;
+                return;
+            }
+            // 放不下，移走
+            currentCol.removeChild(atom.node);
             this.moveToNextColumn(root);
             await this.placeAtom(atom, root);
             return;
@@ -278,23 +320,23 @@ class Typesetter {
         } else if (atom.type === 'scene-box') {
             await this.splitSceneBox(atom, availableHeight, root);
         } else if (atom.type === 'li') {
-            // [New] Timeline List Item Splitting
             await this.splitTimelineItem(atom, availableHeight, root);
         } else {
-            if (atom.node.offsetHeight > this.maxColHeightPx) {
-                console.warn(`Force placing: ${atom.type}`);
-                const currentCol = this.currentPage.cols[this.currentColIndex];
-                currentCol.appendChild(atom.node);
-                this.currentY += atom.node.offsetHeight;
+            // 未知类型: 尝试放置，放不下再移
+            const currentCol = this.currentPage.cols[this.currentColIndex];
+            currentCol.appendChild(atom.node);
+            const height = atom.node.offsetHeight;
+            if (height <= availableHeight || height > this.maxColHeightPx) {
+                this.currentY += height;
                 return;
             }
-
+            currentCol.removeChild(atom.node);
             this.moveToNextColumn(root);
             await this.placeAtom(atom, root);
         }
     }
 
-    // Timeline LI 分割逻辑 (New)
+    // 时间线分割逻辑
     async splitTimelineItem(atom, limitHeight, root) {
         const originalNode = atom.node;
         const currentCol = this.currentPage.cols[this.currentColIndex];
@@ -319,25 +361,25 @@ class Typesetter {
         }
 
         const fullText = textNode.textContent;
-        const bestSplit = this.findBinarySplitIndex(fullText.length, (mid) => {
-            textNode.textContent = fullText.substring(0, mid) + '...';
-            return topPart.offsetHeight <= limitHeight;
-        });
-
-        if (bestSplit < 5) {
+        textNode.textContent = '';
+        if (topPart.offsetHeight > limitHeight) {
             currentCol.removeChild(topPart);
             this.moveToNextColumn(root);
             await this.placeAtom(atom, root);
             return;
         }
 
-        // Top Part Done
+        const bestSplit = this.findBinarySplitIndex(fullText.length, (mid) => {
+            if (mid === 0) textNode.textContent = '';
+            else textNode.textContent = fullText.substring(0, mid);
+            return topPart.offsetHeight <= limitHeight;
+        });
+
         textNode.textContent = fullText.substring(0, bestSplit);
         topPart.classList.add('print-fragment-start');
         this.currentY += topPart.offsetHeight;
         this.moveToNextColumn(root);
 
-        // Bottom Part
         const bottomPart = originalNode.cloneNode(true);
         bottomPart.classList.add('print-fragment-end');
         bottomPart.style.marginTop = '0';
@@ -356,8 +398,7 @@ class Typesetter {
         const originalNode = atom.node;
         const currentCol = this.currentPage.cols[this.currentColIndex];
 
-        const infoNode = originalNode.querySelector(SELECTORS.npc.info) || originalNode.querySelector(SELECTORS.npc.printInfo);
-        if (!infoNode) {
+        if (limitHeight < 1) {
             this.moveToNextColumn(root);
             await this.placeAtom(atom, root);
             return;
@@ -366,55 +407,148 @@ class Typesetter {
         const topPart = originalNode.cloneNode(true);
         currentCol.appendChild(topPart);
 
-        if (limitHeight < 60) {
+        // 获取所有可分割的子元素
+        const portrait = topPart.querySelector(SELECTORS.npc.portrait) || topPart.querySelector('.print-npc-portrait');
+        const infoNode = topPart.querySelector(SELECTORS.npc.info) || topPart.querySelector('.print-npc-info');
+
+        if (!infoNode) {
+            // 没有 info 节点，整体移走
             currentCol.removeChild(topPart);
             this.moveToNextColumn(root);
             await this.placeAtom(atom, root);
             return;
         }
 
-        const topInfo = topPart.querySelector(SELECTORS.npc.info) || topPart.querySelector(SELECTORS.npc.printInfo);
-        const descNode = topInfo.querySelector(SELECTORS.npc.desc);
+        // info 内的子元素：name, role, stats, desc
+        const infoChildren = Array.from(infoNode.children);
+        const descNode = infoNode.querySelector(SELECTORS.npc.desc) || infoNode.querySelector('.npc-desc');
 
-        if (!descNode) {
+        const rawDescText = descNode ? descNode.innerText : '';
+
+        // 隐藏所有元素，然后逐个恢复，找到能放下的最大内容
+
+        // 首先检查如果什么都不显示能否放下（只有容器边框）
+        if (portrait) portrait.style.display = 'none';
+        infoChildren.forEach(c => c.style.display = 'none');
+
+        if (topPart.offsetHeight > limitHeight) {
+            // 连空容器都放不下
             currentCol.removeChild(topPart);
             this.moveToNextColumn(root);
             await this.placeAtom(atom, root);
             return;
         }
 
-        const rawText = descNode.innerText;
-        const bestSplit = this.findBinarySplitIndex(rawText.length, (mid) => {
-            descNode.innerText = rawText.substring(0, mid) + '...';
-            return topPart.offsetHeight <= limitHeight;
-        });
+        // 逐个恢复元素，找到分割点
+        let splitLevel = 'none'; // 分割发生在哪一层
+        let descSplitIndex = 0;  // 如果在描述内分割，分割点在哪里
 
-        if (bestSplit < 10) {
+        // 1. 尝试只放头像
+        if (portrait) {
+            portrait.style.display = '';
+            if (topPart.offsetHeight > limitHeight) {
+                // 连头像都放不下
+                portrait.style.display = 'none';
+                splitLevel = 'none';
+            } else {
+                splitLevel = 'portrait';
+            }
+        }
+
+        // 2. 逐个恢复 info 子元素
+        for (let i = 0; i < infoChildren.length; i++) {
+            const child = infoChildren[i];
+            child.style.display = '';
+
+            if (child === descNode) {
+                // 描述节点需要特殊处理：二分法分割文本
+                descNode.innerText = '';
+                if (topPart.offsetHeight > limitHeight) {
+                    // 连空描述都放不下，恢复到上一个分割点
+                    child.style.display = 'none';
+                    break;
+                }
+
+                // 二分法找描述的分割点
+                const bestSplit = this.findBinarySplitIndex(rawDescText.length, (mid) => {
+                    if (mid === 0) descNode.innerText = '';
+                    else descNode.innerText = rawDescText.substring(0, mid);
+                    return topPart.offsetHeight <= limitHeight;
+                });
+
+                // 检查是否能放下完整描述
+                if (bestSplit >= rawDescText.length) {
+                    descNode.innerText = rawDescText;
+                    if (topPart.offsetHeight <= limitHeight) {
+                        // 整个卡片都能放下
+                        this.currentY += topPart.offsetHeight;
+                        return;
+                    }
+                }
+
+                descSplitIndex = bestSplit;
+
+                if (descSplitIndex === 0) {
+                    descNode.innerText = '';
+                } else {
+                    descNode.innerText = rawDescText.substring(0, descSplitIndex).trim();
+                }
+                splitLevel = 'desc';
+                break;
+            } else {
+                // 非描述节点
+                if (topPart.offsetHeight > limitHeight) {
+                    // 这个元素放不下，恢复到上一个分割点
+                    child.style.display = 'none';
+                    break;
+                }
+                // 记录分割点
+                splitLevel = child.className || 'info-child-' + i;
+            }
+        }
+
+        // 如果什么都放不下，移到下一栏
+        if (splitLevel === 'none' && (!portrait || portrait.style.display === 'none')) {
             currentCol.removeChild(topPart);
             this.moveToNextColumn(root);
             await this.placeAtom(atom, root);
             return;
         }
 
-        descNode.innerText = rawText.substring(0, bestSplit);
+        // 应用分割
         topPart.classList.add('print-fragment-start');
         this.currentY += topPart.offsetHeight;
-
         this.moveToNextColumn(root);
 
+        // 创建下半部分
         const bottomPart = originalNode.cloneNode(true);
         bottomPart.classList.add('print-fragment-end');
 
-        const bottomPortrait = bottomPart.querySelector(SELECTORS.npc.portrait) || bottomPart.querySelector(SELECTORS.npc.printPortrait);
-        if (bottomPortrait) bottomPortrait.style.display = 'none';
+        const bottomPortrait = bottomPart.querySelector(SELECTORS.npc.portrait) || bottomPart.querySelector('.print-npc-portrait');
+        const bottomInfo = bottomPart.querySelector(SELECTORS.npc.info) || bottomPart.querySelector('.print-npc-info');
+        const bottomInfoChildren = Array.from(bottomInfo.children);
+        const bottomDesc = bottomInfo.querySelector(SELECTORS.npc.desc) || bottomInfo.querySelector('.npc-desc');
 
-        const bottomInfo = bottomPart.querySelector(SELECTORS.npc.info) || bottomPart.querySelector(SELECTORS.npc.printInfo);
-        const bottomDesc = bottomInfo.querySelector(SELECTORS.npc.desc);
-        bottomDesc.innerText = rawText.substring(bestSplit);
+        // 隐藏上半部分已显示的元素
+        if (bottomPortrait && portrait && portrait.style.display !== 'none') {
+            bottomPortrait.style.display = 'none';
+        }
+        for (let i = 0; i < bottomInfoChildren.length; i++) {
+            const child = bottomInfoChildren[i];
+            const topChild = infoChildren[i];
 
-        Array.from(bottomInfo.children).forEach(c => {
-            if (c !== bottomDesc) c.style.display = 'none';
-        });
+            if (child === bottomDesc || topChild === descNode) {
+                if (splitLevel === 'desc' && descSplitIndex > 0) {
+                    bottomDesc.innerText = rawDescText.substring(descSplitIndex).trim();
+                }
+                break;
+            }
+
+            if (topChild && topChild.style.display !== 'none') {
+                // 这个元素在上半部分已显示，下半部分隐藏
+                child.style.display = 'none';
+            }
+        }
 
         await this.placeAtom({ type: 'npc-card', node: bottomPart }, root);
     }
@@ -426,7 +560,7 @@ class Typesetter {
         const topPart = originalNode.cloneNode(true);
         currentCol.appendChild(topPart);
 
-        if (limitHeight < 40) {
+        if (limitHeight < 1) {
             currentCol.removeChild(topPart);
             this.moveToNextColumn(root);
             await this.placeAtom(atom, root);
@@ -442,23 +576,74 @@ class Typesetter {
         }
 
         const rawText = descNode.innerText;
-        const bestSplit = this.findBinarySplitIndex(rawText.length, (mid) => {
-            descNode.innerText = rawText.substring(0, mid) + '...';
-            const eventNode = topPart.querySelector(SELECTORS.scene.event);
-            if (eventNode) eventNode.style.display = 'none';
-            return topPart.offsetHeight <= limitHeight;
-        });
 
-        if (bestSplit < 5) {
+        // 检查头部是否能放下（隐藏事件）
+        descNode.innerText = '';
+        const topEventCheck = topPart.querySelector(SELECTORS.scene.event);
+        if (topEventCheck) topEventCheck.style.display = 'none';
+
+        if (topPart.offsetHeight > limitHeight) {
             currentCol.removeChild(topPart);
             this.moveToNextColumn(root);
             await this.placeAtom(atom, root);
             return;
         }
 
-        descNode.innerText = rawText.substring(0, bestSplit);
+        const bestSplit = this.findBinarySplitIndex(rawText.length, (mid) => {
+            if (mid === 0) descNode.innerText = '';
+            else descNode.innerText = rawText.substring(0, mid);
+            const eventNode = topPart.querySelector(SELECTORS.scene.event);
+            if (eventNode) eventNode.style.display = 'none';
+            return topPart.offsetHeight <= limitHeight;
+        });
+
+        // 如果整个描述都能放下，检查事件是否也能放下
+        if (bestSplit >= rawText.length) {
+            descNode.innerText = rawText;
+            const eventNode = topPart.querySelector(SELECTORS.scene.event);
+            if (eventNode) eventNode.style.display = '';
+
+            if (topPart.offsetHeight <= limitHeight) {
+                this.currentY += topPart.offsetHeight;
+                return;
+            }
+        }
+
+        if (bestSplit === 0) descNode.innerText = '';
+        else descNode.innerText = rawText.substring(0, bestSplit);
+
         const topEvent = topPart.querySelector(SELECTORS.scene.event);
-        if (topEvent) topEvent.style.display = 'none';
+        let eventKeptInTop = false;
+        let eventSplitIndex = -1;
+        let fullEventText = '';
+
+        if (topEvent) {
+            fullEventText = topEvent.innerText;
+
+            if (bestSplit < rawText.length) {
+                // 描述未完全放下，隐藏事件
+                topEvent.style.display = 'none';
+            } else {
+                topEvent.style.display = '';
+                if (topPart.offsetHeight > limitHeight) {
+                    // 事件放不下，尝试分割事件文本
+                    const eventSplit = this.findBinarySplitIndex(fullEventText.length, (mid) => {
+                        if (mid === 0) topEvent.innerText = '';
+                        else topEvent.innerText = fullEventText.substring(0, mid);
+                        return topPart.offsetHeight <= limitHeight;
+                    });
+
+                    if (eventSplit > 0) {
+                        topEvent.innerText = fullEventText.substring(0, eventSplit);
+                        eventSplitIndex = eventSplit;
+                    } else {
+                        topEvent.style.display = 'none';
+                    }
+                } else {
+                    eventKeptInTop = true;
+                }
+            }
+        }
 
         topPart.classList.add('print-fragment-start');
         this.currentY += topPart.offsetHeight;
@@ -474,28 +659,37 @@ class Typesetter {
         const bottomDesc = bottomPart.querySelector(SELECTORS.scene.desc);
         bottomDesc.innerText = rawText.substring(bestSplit);
 
+        const bottomEvent = bottomPart.querySelector(SELECTORS.scene.event);
+        if (eventKeptInTop) {
+            if (bottomEvent) bottomEvent.style.display = 'none';
+        } else if (eventSplitIndex > 0) {
+            if (bottomEvent) {
+                bottomEvent.innerText = fullEventText.substring(eventSplitIndex);
+            }
+        }
+
         await this.placeAtom({ type: 'scene-box', node: bottomPart }, root);
     }
 
     async splitTextNode(atom, limitHeight, root) {
-        const fullText = atom.node.textContent;
+        const fullText = atom.node.innerText;
         const tempNode = atom.node.cloneNode(true);
-        tempNode.textContent = '';
         const currentCol = this.currentPage.cols[this.currentColIndex];
         currentCol.appendChild(tempNode);
 
         const bestFitIndex = this.findBinarySplitIndex(fullText.length, (mid) => {
-            tempNode.textContent = fullText.substring(0, mid) + '...';
+            tempNode.innerText = fullText.substring(0, mid);
             return tempNode.offsetHeight <= limitHeight;
         });
 
-        tempNode.textContent = fullText.substring(0, bestFitIndex);
+        tempNode.innerText = fullText.substring(0, bestFitIndex);
         tempNode.classList.add('print-fragment-start');
         this.currentY += tempNode.offsetHeight;
+
         this.moveToNextColumn(root);
 
         const remainingAtom = { type: atom.type, node: atom.node.cloneNode(true) };
-        remainingAtom.node.textContent = fullText.substring(bestFitIndex);
+        remainingAtom.node.innerText = fullText.substring(bestFitIndex);
         remainingAtom.node.classList.add('print-fragment-end');
         await this.placeAtom(remainingAtom, root);
     }

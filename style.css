@@ -561,13 +561,13 @@ li {
 
 /* A4 页面容器 */
 .print-page {
-    width: 210mm;
+    width: 211.67mm;
     height: 297mm;
     background: var(--bg-panel);
     /* 适配主题 */
     color: var(--text-primary);
-    padding: 25mm;
-    /* Sync with JS margin 25mm */
+    padding: 15.875mm;
+    /* Sync with JS margin 15.875mm (matches DOCX) */
     box-sizing: border-box;
     display: flex;
     flex-wrap: wrap;
@@ -578,7 +578,7 @@ li {
 
 /* 排版栏 */
 .print-column {
-    width: calc((100% - 10mm) / 2);
+    width: calc((100% - 10.58mm) / 2);
     /* (总宽 - 间距) / 2 */
     height: 100%;
     /* margin-right: 10mm; 在 JS 中设置了，但 CSS 兜底 */
@@ -594,9 +594,10 @@ li {
     margin-bottom: 5mm;
     font-size: 12pt;
     line-height: 1.5;
-    text-align: justify;
+    text-align: left;
+    word-break: break-word;
+    overflow-wrap: break-word;
     color: var(--text-primary);
-    /* 适配主题 */
 }
 
 /* 保持原来 app 的一些样式但做适配 */
@@ -604,12 +605,15 @@ li {
     font-size: 17pt;
     /* 22.4px equivalent */
     font-weight: bold;
-    border-bottom: 2pt solid var(--accent);
-    margin-bottom: 10mm;
+    border-bottom: 1px solid var(--accent);
+    /* Match DOCX 0.75pt (approx 1px) */
+    margin-bottom: 2mm;
+    /* Match DOCX 100 twips */
     margin-top: 5mm;
     color: var(--accent);
     width: 100%;
-    text-align: center;
+    text-align: left;
+    /* Match DOCX default alignment */
     page-break-after: avoid;
     break-after: avoid;
 }
@@ -619,7 +623,8 @@ li {
     font-weight: bold;
     border-bottom: 1pt solid var(--border);
     margin-top: 5mm;
-    margin-bottom: 3mm;
+    margin-bottom: 2mm;
+    /* Tighter hierarchy */
     color: var(--text-primary);
     width: 100%;
     page-break-after: avoid;
@@ -628,56 +633,57 @@ li {
 
 .print-atom p {
     margin: 0 0 3mm 0;
-    text-indent: 2em;
+    text-indent: 0;
 }
 
 .print-npc-card {
     border: 1pt solid var(--border);
     padding: 3mm;
     display: flex;
+    flex-direction: column;
     gap: 3mm;
     margin-bottom: 10mm;
-    /* 增加到 10mm */
     background: rgba(0, 0, 0, 0.05);
-    /* 半透明适配所有深浅色主题 */
     break-inside: auto;
-    /* 允许跨栏 */
 }
 
 .print-npc-portrait {
-    width: 15mm;
-    height: 20mm;
-    border: 1pt solid var(--border);
+    width: 21mm;
+    height: 26mm;
+    border: 2pt solid var(--text-primary);
+    background: var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 20pt;
     flex-shrink: 0;
-    /* 禁止头像压缩 */
+    align-self: flex-start;
 }
 
 .print-npc-info {
     flex: 1;
     display: block;
-    /* 确保内部块级排版 */
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .print-npc-name {
     font-weight: bold;
-    font-size: 11pt;
+    font-size: 12pt;
     border-bottom: 0.5pt solid var(--border);
     margin-bottom: 1mm;
     color: var(--accent);
 }
 
 .print-scene-box {
-    border-left: 2mm solid var(--text-muted);
+    border-left: 1mm solid var(--text-muted);
     background: rgba(0, 0, 0, 0.02);
     padding: 3mm;
     margin-bottom: 5mm;
     font-size: 10pt;
+    word-break: break-word;
+    overflow-wrap: break-word;
     break-inside: auto;
-    /* 允许跨栏 */
 }
 
 .print-fragment-start {

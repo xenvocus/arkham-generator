@@ -2,7 +2,7 @@ const SELECTORS = {
     title: '.book-title',
     section: '.book-section',
     headerSection: '.book-header-section',
-    h1: '.book-h1', // Note: logic might check tagName H1 too
+    h1: '.book-h1',
     p: '.book-p',
     meta: '.book-meta',
     npc: {
@@ -10,7 +10,7 @@ const SELECTORS = {
         info: '.npc-info',
         desc: '.npc-desc',
         portrait: '.npc-portrait',
-        printInfo: '.print-npc-info', // Legacy/Printer specific
+        printInfo: '.print-npc-info',
         printPortrait: '.print-npc-portrait'
     },
     scene: {

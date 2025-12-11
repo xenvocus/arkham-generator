@@ -36,9 +36,7 @@ function escapeTex(str) {
     return str.replace(/([&%$#_{}])/g, '\\$1').replace(/\n/g, ' ').trim();
 }
 
-// downloadFile utility is now in ui_utils.js
-
-// --- Common Parser ---
+// 解析书籍内容
 function parseBookContent() {
     const contentNode = document.getElementById('book-content');
     if (!contentNode) throw new Error("Cannot find book content");
